@@ -1,4 +1,3 @@
-# src/mujosign/utils/joint_names.py
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -67,14 +66,6 @@ TIP_SITES = {
 # If later find a site representing the palm frame, set PALM_SITE = "palm"
 # and the orientation scorer can use it; otherwise compute a proxy normal.
 PALM_SITE = None  # e.g., "palm" / "hand_root" if present in site_names.json
-
-# src/mujosign/utils/joint_names.py
-from __future__ import annotations
-import json
-from pathlib import Path
-from typing import List, Optional
-
-# --- existing DOF_MAP, TIP_SITES, PALM_SITE stay as-is above this line ---
 
 # Default location where scripts/inspect_names.py wrote names
 _DISCOVERY_ROOT = Path("assets/discovery")

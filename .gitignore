@@ -1,0 +1,52 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dll
+
+# Virtual envs
+.venv/
+venv/
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# --- Build / packaging ---
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# --- Project specific ---
+# Simulation outputs and discovery dumps
+assets/discovery/**
+
+# Gesture libraries (produced runs, artifacts, thumbs)
+library/**
+
+# Reports (metrics.csv, summary.md, thumbs, plots)
+reports/**
+
+# Logs
+logs/**
+*.log
+
+# Generated configs / temporary files
+configs/*.local.yaml
+
+# --- Data cache (if you add later) ---
+data/cache/**

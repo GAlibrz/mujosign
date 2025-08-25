@@ -39,6 +39,7 @@ def main():
     # Read current state & score (pose-only)
     angles_deg = adapter.get_joint_angles_deg()
     breakdown = score(angles_deg, spec)
+    print("angles_deg:", adapter.get_joint_angles_deg())
 
     print(f"[{args.env_id}] {spec.get('gesture')} :: total={breakdown['total']:.3f}  pose={breakdown['pose_error']:.3f}")
 
