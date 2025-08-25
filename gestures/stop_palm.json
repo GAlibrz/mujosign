@@ -1,0 +1,30 @@
+{
+  "gesture": "stop_palm",
+  "handedness": "right",
+  "model": "myoHand",
+  "joints": {
+    "index_MCP_flex":  { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "index_PIP_flex":  { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "index_DIP_flex":  { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "middle_MCP_flex": { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "middle_PIP_flex": { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "middle_DIP_flex": { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "ring_MCP_flex":   { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "ring_PIP_flex":   { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "ring_DIP_flex":   { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "little_MCP_flex": { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "little_PIP_flex": { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "little_DIP_flex": { "target": 0, "tolerance": 10, "weight": 1.0 },
+    "thumb_CMC_flex":  { "target": 10, "tolerance": 20, "weight": 0.8 },
+    "thumb_MCP_flex":  { "target": 10, "tolerance": 20, "weight": 0.8 },
+    "thumb_IP_flex":   { "target": 10, "tolerance": 20, "weight": 0.8 },
+    "wrist_pitch":     { "target": 0,  "tolerance": 10, "weight": 0.8 },
+    "wrist_yaw":       { "target": 0,  "tolerance": 10, "weight": 0.8 }
+  },
+  "relations": {},
+  "contacts": { "require": [], "forbid": [] },
+  "orientation": { "palm_normal_world": "forward", "palm_normal_tolerance_deg": 15 },
+  "stability": { "hold_steps": 50, "max_joint_drift_deg": 5, "max_tip_drift_mm": 5 },
+  "weights": { "pose_error": 1.0, "relation_error": 1.0, "contact_error": 1.0, "orientation_error": 1.0, "effort": 0.01, "smoothness": 0.005, "rom_violation": 1000.0, "tendon_violation": 1000.0, "stability_violation": 100.0 },
+  "notes": "‘Stop’ sign—emphasize palm facing forward."
+}

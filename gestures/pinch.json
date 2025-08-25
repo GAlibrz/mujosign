@@ -1,0 +1,25 @@
+{
+  "gesture": "pinch",
+  "handedness": "right",
+  "model": "myoHand",
+  "joints": {
+    "index_MCP_flex":  { "target": 20, "tolerance": 20, "weight": 0.7 },
+    "index_PIP_flex":  { "target": 30, "tolerance": 20, "weight": 0.9 },
+    "index_DIP_flex":  { "target": 20, "tolerance": 20, "weight": 0.9 },
+
+    "thumb_CMC_flex":  { "target": 10, "tolerance": 20, "weight": 0.9 },
+    "thumb_MCP_flex":  { "target": 20, "tolerance": 20, "weight": 0.9 },
+    "thumb_IP_flex":   { "target": 15, "tolerance": 20, "weight": 0.9 },
+
+    "wrist_pitch":     { "target": 0,  "tolerance": 15, "weight": 0.3 },
+    "wrist_yaw":       { "target": 0,  "tolerance": 15, "weight": 0.3 }
+  },
+  "relations": {
+    "thumb_index_tip_distance_mm": { "target": 0, "tolerance": 3, "weight": 1.0 }
+  },
+  "contacts": { "require": [ "thumb_pad:index_pad" ], "forbid": [] },
+  "orientation": { "palm_normal_world": "forward", "palm_normal_tolerance_deg": 25 },
+  "stability": { "hold_steps": 50, "max_joint_drift_deg": 5, "max_tip_drift_mm": 3 },
+  "weights": { "pose_error": 1.0, "relation_error": 1.0, "contact_error": 2.0, "orientation_error": 0.5, "effort": 0.01, "smoothness": 0.005, "rom_violation": 1000.0, "tendon_violation": 1000.0, "stability_violation": 100.0 },
+  "notes": "Tip pinch; emphasize tip proximity/contact."
+}
