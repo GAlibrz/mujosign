@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/gesture_spec.schema.json",
+  "title": "GestureSpec v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gesture", "handedness", "model", "joints", "stability", "weights"],
+  "properties": {
+    "gesture": {
+      "type": "string",
+      "description": "Gesture name in snake_case.",
+      "pattern": "^[a-z0-9_]+$",
+      "minLength": 1
+    },
+    "handedness": {
+      "type": "string",
+      "enum": ["right", "left"]
+    },
+    "model": {
+      "type": "string",
+      "enum": ["myoHand"]
+    },
+    "joints": {
+      "type": "object",
+      "description": "Per-DOF targets with tolerances and weights.",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9_]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["target", "tolerance", "weight"],
+          "properties": {
+            "target": { "type": "number" },
+            "tolerance": { "type": "number", "minimum": 0 },
+            "weight": { "type": "number", "minimum": 0 },
+            "mode": { "type": "string", "enum": ["value", "min", "max", "range"] }
+          }
+        }
+      }
+    },
+    "relations": {
+      "type": "object",
+      "description": "Derived geometric relations (e.g., abduction angles, tip distances).",
+      "default": {},
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9_]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "target": { "type": "number" },
+            "tolerance": { "type": "number", "minimum": 0 },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "weight": { "type": "number", "minimum": 0 }
+          },
+          "allOf": [
+            {
+              "anyOf": [
+                { "required": ["target", "tolerance"] },
+                { "required": ["min"] },
+                { "required": ["max"] }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "contacts": {
+      "type": "object",
+      "description": "Required/forbidden contact pairs (symbolic).",
+      "default": { "require": [], "forbid": [] },
+      "additionalProperties": false,
+      "properties": {
+        "require": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9_]+:[a-z0-9_]+$" },
+          "uniqueItems": true
+        },
+        "forbid": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9_]+:[a-z0-9_]+$" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "orientation": {
+      "type": "object",
+      "description": "Wrist angles and/or palm normal target.",
+      "additionalProperties": false,
+      "properties": {
+        "wrist_pitch_deg": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["target", "tolerance"],
+          "properties": {
+            "target": { "type": "number" },
+            "tolerance": { "type": "number", "minimum": 0 },
+            "weight": { "type": "number", "minimum": 0, "default": 0.5 }
+          }
+        },
+        "wrist_yaw_deg": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["target", "tolerance"],
+          "properties": {
+            "target": { "type": "number" },
+            "tolerance": { "type": "number", "minimum": 0 },
+            "weight": { "type": "number", "minimum": 0, "default": 0.5 }
+          }
+        },
+        "palm_normal_world": {
+          "type": "string",
+          "enum": ["forward", "up", "any"],
+          "default": "any"
+        },
+        "palm_normal_tolerance_deg": { "type": "number", "minimum": 0, "default": 20 }
+      }
+    },
+    "stability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hold_steps", "max_joint_drift_deg", "max_tip_drift_mm"],
+      "properties": {
+        "hold_steps": { "type": "integer", "minimum": 1 },
+        "max_joint_drift_deg": { "type": "number", "minimum": 0 },
+        "max_tip_drift_mm": { "type": "number", "minimum": 0 }
+      }
+    },
+    "weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pose_error",
+        "relation_error",
+        "contact_error",
+        "orientation_error",
+        "effort",
+        "smoothness",
+        "rom_violation",
+        "tendon_violation",
+        "stability_violation"
+      ],
+      "properties": {
+        "pose_error": { "type": "number", "minimum": 0 },
+        "relation_error": { "type": "number", "minimum": 0 },
+        "contact_error": { "type": "number", "minimum": 0 },
+        "orientation_error": { "type": "number", "minimum": 0 },
+        "effort": { "type": "number", "minimum": 0 },
+        "smoothness": { "type": "number", "minimum": 0 },
+        "rom_violation": { "type": "number", "minimum": 0 },
+        "tendon_violation": { "type": "number", "minimum": 0 },
+        "stability_violation": { "type": "number", "minimum": 0 }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}
