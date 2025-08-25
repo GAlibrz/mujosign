@@ -1,0 +1,11 @@
+{
+  "env_id": "myoHandPoseFixed-v0",
+  "njnt": 23,
+  "nq": 23,
+  "nv": 23,
+  "nu": 39,
+  "nsite": 333,
+  "ntendon": 44,
+  "nbody": 39,
+  "ngeom": 99
+}
