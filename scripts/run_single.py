@@ -8,6 +8,9 @@ from mujosign.sim_adapter import EnvAdapter
 from mujosign.scoring import score
 from mujosign.utils.joint_names import DOF_MAP, TIP_SITES, load_muscle_order
 
+from pathlib import Path
+from mujosign.artifacts import write_run_artifacts, ProvenanceInputs
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--env-id", default="myoHandPoseFixed-v0")
@@ -43,7 +46,54 @@ def main():
 
     print(f"[{args.env_id}] {spec.get('gesture')} :: total={breakdown['total']:.3f}  pose={breakdown['pose_error']:.3f}")
 
+    # Build activation card for the last action you tried (zeros here; replace with optimized)
+    muscle_order = load_muscle_order(args.env_id)
+    activation_vec = zero_action.tolist()  # or your optimized vector
+
+    activation_card = {
+        "env_id": args.env_id,
+        "muscles": muscle_order,
+        "activations": activation_vec,
+        "range": [0.0, 1.0],
+        "units": "fraction",
+        "time_horizon": "static"
+    }
+
+    pose_summary = {
+        "joint_angles_deg": angles_deg,
+        "tip_positions_m": {k: v.tolist() for k, v in adapter.get_fingertip_positions().items()},
+        "palm_normal_world": None,
+    }
+
+    versions = {
+        "mujosign": "0.0.1",
+        "myosuite": getattr(myosuite, "__version__", "?"),
+        "mujoco": getattr(__import__("mujoco"), "__version__", "?"),
+    }
+
+    solver_cfg = {"name": "coord_descent_v0", "seed": 0, "passes": 0}  # update when you add an optimizer
+    prov = ProvenanceInputs(
+        env_id=args.env_id,
+        gesture_spec=spec,
+        solver_config=solver_cfg,
+        versions=versions,
+        muscle_order=muscle_order,
+    )
+
+    run_dir = write_run_artifacts(
+        library_root=Path("library"),
+        gesture=spec["gesture"],
+        prov=prov,
+        activation=activation_card,
+        scores=breakdown | {"accepted": False},  # set True when you pass gates
+        pose_summary=pose_summary,
+        thumb_png_path=None,  # or Path("reports/last_frame.png")
+    )
+
+    print("Artifacts written to:", run_dir)
     env.close()
+
+    
 
 if __name__ == "__main__":
     main()

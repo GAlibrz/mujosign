@@ -26,7 +26,7 @@
       "minProperties": 1,
       "additionalProperties": false,
       "patternProperties": {
-        "^[a-z0-9_]+$": {
+        "^[A-Za-z0-9_]+$": {
           "type": "object",
           "additionalProperties": false,
           "required": ["target", "tolerance", "weight"],
@@ -45,7 +45,7 @@
       "default": {},
       "additionalProperties": false,
       "patternProperties": {
-        "^[a-z0-9_]+$": {
+        "^[A-Za-z0-9_]+$": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
