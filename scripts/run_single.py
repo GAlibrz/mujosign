@@ -85,7 +85,7 @@ def main():
         gesture=spec["gesture"],
         prov=prov,
         activation=activation_card,
-        scores=breakdown | {"accepted": False},  # set True when you pass gates
+        scores={**breakdown, "accepted": False},  # set True when you pass gates
         pose_summary=pose_summary,
         thumb_png_path=None,  # or Path("reports/last_frame.png")
     )
