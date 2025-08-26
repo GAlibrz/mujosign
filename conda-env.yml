@@ -1,0 +1,30 @@
+name: myosuite
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Base
+  - python=3.10
+  - pip
+  - numpy
+  - pandas
+  - pyyaml
+  - jsonschema
+  - imageio
+  - tqdm
+  - pytest
+
+  # Gym / RL
+  - gymnasium=0.29.1
+  - box2d-py  # harmless; some gym deps expect it
+  - pip:
+      # MuJoCo + MyoSuite
+      - mujoco==3.1.2
+      - myosuite==2.8.4
+      # RL
+      - stable-baselines3[extra]==2.3.0
+      # Torch GPU (CUDA 12.1 wheels; adjust if your cluster uses another CUDA)
+      - --extra-index-url https://download.pytorch.org/whl/cu121
+      - torch==2.3.1+cu121
+      - torchvision==0.18.1+cu121
+      - torchaudio==2.3.1+cu121
