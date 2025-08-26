@@ -1,0 +1,7 @@
+# configs/solver.fastpath.yaml
+steps_per_eval: 30
+passes: 3
+step_schedule: [0.2, 0.1, 0.05]
+seed: 0
+effort_weight: 0.0
+verbose: true
