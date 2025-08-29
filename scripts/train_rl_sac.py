@@ -39,6 +39,7 @@ from mujosign.rl.pose_env import PoseActivationEnv
 from mujosign.sim_adapter import EnvAdapter
 from mujosign.scoring import score
 from mujosign.utils.joint_names import DOF_MAP, TIP_SITES, load_muscle_order
+from mujosign.rl.action_recorder import ActionRecorder
 
 import myosuite  # noqa: F401
 import mujoco    # noqa: F401
@@ -53,10 +54,12 @@ def load_specs(path_or_dir: str):
     return [json.loads(p.read_text())]
 
 
-def make_vec_env(env_kwargs, seed: int):
+def make_vec_env(env_kwargs, seed: int, logdir: Path, hold: int):
     def _thunk():
         env = PoseActivationEnv(**env_kwargs, seed=seed)
-        return Monitor(env)
+        # Wrap with ActionRecorder to save trajectories
+        trace_dir = Path(logdir) / "traces"
+        return ActionRecorder(env, out_dir=trace_dir, env_hold=hold)
     return DummyVecEnv([_thunk])
 
 
@@ -271,8 +274,7 @@ def main():
         lambda_smooth=args.lam_smooth,
         normalize_angles=args.normalize_angles,
     )
-    vec_env = make_vec_env(env_kwargs, seed=args.seed)
-
+    vec_env = make_vec_env(env_kwargs, seed=args.seed, logdir=Path(args.logdir), hold=args.hold)
     save_base = Path(args.save)
     save_base.parent.mkdir(parents=True, exist_ok=True)
 

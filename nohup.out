@@ -1,0 +1,90 @@
+/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pygame/pkgdata.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import resource_stream, resource_exists
+/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/skvideo/utils/stpyr.py:2: DeprecationWarning: scipy.misc is deprecated and will be removed in 2.0.0
+  import scipy.misc as sc
+pygame 2.6.1 (SDL 2.28.4, Python 3.10.18)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+MyoSuite:> Registering Myo Envs
+    MyoSuite: A contact-rich simulation suite for musculoskeletal motor control
+        Vittorio Caggiano, Huawei Wang, Guillaume Durandau, Massimo Sartori, Vikash Kumar
+        L4DC-2019 | https://sites.google.com/view/myosuite
+    
+[start] new SAC run
+Traceback (most recent call last):
+  File "/home/cip/ai2023/ry14vuci/mujosign/scripts/train_rl_sac.py", line 331, in <module>
+    main()
+  File "/home/cip/ai2023/ry14vuci/mujosign/scripts/train_rl_sac.py", line 323, in main
+    model.learn(total_timesteps=args.total_steps, callback=cb, progress_bar=True)
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/sac/sac.py", line 307, in learn
+    return super().learn(
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 328, in learn
+    rollout = self.collect_rollouts(
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 568, in collect_rollouts
+    if not callback.on_step():
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/callbacks.py", line 114, in on_step
+    return self._on_step()
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/callbacks.py", line 219, in _on_step
+    continue_training = callback.on_step() and continue_training
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/callbacks.py", line 114, in on_step
+    return self._on_step()
+  File "/home/cip/ai2023/ry14vuci/mujosign/scripts/train_rl_sac.py", line 195, in _on_step
+    obs, r, done, trunc, info = self.training_env.step(action)
+ValueError: not enough values to unpack (expected 5, got 4)
+Exception ignored in: <function tqdm.__del__ at 0x7efe4f4b45e0>
+Traceback (most recent call last):
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/tqdm/std.py", line 1148, in __del__
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/tqdm/rich.py", line 121, in close
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/rich/progress.py", line 1189, in __exit__
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/rich/progress.py", line 1175, in stop
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/rich/live.py", line 165, in stop
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/rich/live.py", line 272, in refresh
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/rich/console.py", line 1698, in print
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/rich/console.py", line 1555, in _collect_renderables
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/rich/protocol.py", line 28, in rich_cast
+ImportError: sys.meta_path is None, Python is likely shutting down
+/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pygame/pkgdata.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import resource_stream, resource_exists
+pygame 2.6.1 (SDL 2.28.4, Python 3.10.18)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Traceback (most recent call last):
+  File "/home/cip/ai2023/ry14vuci/mujosign/scripts/train_rl_sac.py", line 33, in <module>
+    from stable_baselines3 import SAC
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/__init__.py", line 3, in <module>
+    from stable_baselines3.a2c import A2C
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/a2c/__init__.py", line 1, in <module>
+    from stable_baselines3.a2c.a2c import A2C
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/a2c/a2c.py", line 7, in <module>
+    from stable_baselines3.common.buffers import RolloutBuffer
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/buffers.py", line 16, in <module>
+    from stable_baselines3.common.utils import get_device
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/utils.py", line 24, in <module>
+    from stable_baselines3.common.logger import Logger, configure
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/stable_baselines3/common/logger.py", line 13, in <module>
+    import pandas
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pandas/__init__.py", line 49, in <module>
+    from pandas.core.api import (
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pandas/core/api.py", line 47, in <module>
+    from pandas.core.groupby import (
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pandas/core/groupby/__init__.py", line 1, in <module>
+    from pandas.core.groupby.generic import (
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pandas/core/groupby/generic.py", line 68, in <module>
+    from pandas.core.frame import DataFrame
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pandas/core/frame.py", line 509, in <module>
+    class DataFrame(NDFrame, OpsMixin):
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pandas/core/frame.py", line 2188, in DataFrame
+    def to_gbq(
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/site-packages/pandas/util/_decorators.py", line 295, in decorate
+    old_sig = inspect.signature(func)
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/inspect.py", line 3254, in signature
+    return Signature.from_callable(obj, follow_wrapped=follow_wrapped,
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/inspect.py", line 3002, in from_callable
+    return _signature_from_callable(obj, sigcls=cls,
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/inspect.py", line 2463, in _signature_from_callable
+    return _signature_from_function(sigcls, obj,
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/inspect.py", line 2334, in _signature_from_function
+    parameters.append(Parameter(name, annotation=annotation,
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/inspect.py", line 2639, in __init__
+    self._kind = _ParameterKind(kind)
+  File "/proj/ciptmp/ry14vuci/envs/myosuite310/lib/python3.10/enum.py", line 359, in __call__
+    def __call__(cls, value, names=None, *, module=None, qualname=None, type=None, start=1):
+KeyboardInterrupt
