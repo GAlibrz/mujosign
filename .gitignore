@@ -50,3 +50,10 @@ configs/*.local.yaml
 
 # --- Data cache (if you add later) ---
 data/cache/**
+
+runs/
+/proj/
+*.zip
+*.npz
+*.log
+traces/
