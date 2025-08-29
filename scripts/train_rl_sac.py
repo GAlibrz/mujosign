@@ -2,26 +2,27 @@
 """
 Train a SAC policy on PoseActivationEnv and (optionally) resume from a checkpoint.
 
-Minimal-but-useful logs:
-- Console: brief progress prints every eval.
-- TensorBoard (optional): if you open it later.
-- CSV: step, reward_mean, success_rate, best_score → <logdir>/progress.csv
-- Checkpoints: <save>.zip (always latest) + <save>-stepXXXXXX.zip (every eval)
+Logs/artifacts:
+- Console: concise eval lines every --eval-interval env steps (shows step & episode).
+- CSV: <logdir>/progress.csv with columns: step, episode, reward_mean, success_rate, best_score.
+- TensorBoard (optional): <logdir> if you open it later.
+- Checkpoints: <save>.zip (rolling latest) + <save>-stepXXXXXX.zip (every eval).
+- Traces: <logdir>/traces/ with per-episode action/score JSONL (via ActionRecorder).
 
-Usage (fresh run):
+Usage (fresh):
   python scripts/train_rl_sac.py \
     --env-id myoHandPoseFixed-v0 \
     --specs gestures/v_sign.json \
     --total-steps 300000 \
     --hold 20 --max-steps 8 \
     --success 1000.0 \
-    --logdir /proj/ciptmp/$USER/mujosign_runs/v_sign_sac_full \
-    --save   /proj/ciptmp/$USER/mujosign_ckpts/v_sign_sac_full/latest
+    --logdir ./runs/rl_sac \
+    --save   ./checkpoints/rl_sac_latest
 
-Usage (resume automatically if --save.zip exists):
+Resume automatically if --save.zip exists:
   python scripts/train_rl_sac.py ... --resume
 
-Usage (resume from a specific file):
+Resume from an explicit file:
   python scripts/train_rl_sac.py ... --resume-from /path/to/ckpt.zip
 """
 
@@ -31,7 +32,6 @@ import numpy as np
 import gymnasium as gym
 
 from stable_baselines3 import SAC
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import BaseCallback
 
@@ -78,7 +78,7 @@ def featurize_spec(spec_obj):
 
 
 def evaluate_and_write(model: SAC, env_id: str, spec: dict, hold: int, horizon: int, library_root: Path):
-    """Deterministic rollout on one spec, write run artifacts."""
+    """Deterministic rollout on one spec, write run artifacts; returns (run_dir, best_total)."""
     env = gym.make(env_id)
     muscle_order = load_muscle_order(env_id)
     adapter = EnvAdapter(env, dof_map=DOF_MAP, tip_sites=TIP_SITES, muscle_order=muscle_order)
@@ -152,8 +152,28 @@ def evaluate_and_write(model: SAC, env_id: str, spec: dict, hold: int, horizon: 
 # ---------- callbacks ----------
 
 class EvalSaveCallback(BaseCallback):
-    def __init__(self, env_id, specs, eval_hold, eval_horizon, save_path_base: Path,
-                 log_csv_path: Path, library_root: Path, eval_every_steps: int, verbose: int = 0):
+    """
+    Periodic:
+    - evaluate (mean reward, success rate) on a separate single env,
+    - write artifacts for each spec (best pose),
+    - save latest and stepped checkpoints,
+    - append a CSV row,
+    - print a concise line (includes episode counter).
+    """
+    def __init__(
+        self,
+        env_id,
+        specs,
+        eval_hold,
+        eval_horizon,
+        save_path_base: Path,
+        log_csv_path: Path,
+        library_root: Path,
+        eval_every_steps: int,
+        eval_env_kwargs: dict,     # independent eval env kwargs
+        eval_seed: int = 123,
+        verbose: int = 0
+    ):
         super().__init__(verbose=verbose)
         self.env_id = env_id
         self.specs = specs
@@ -164,48 +184,49 @@ class EvalSaveCallback(BaseCallback):
         self.library_root = library_root
         self.eval_every = eval_every_steps
 
+        # independent single env for evaluation (Gymnasium 5-tuple API)
+        self.eval_env = PoseActivationEnv(**eval_env_kwargs, seed=eval_seed)
+
         self.best_total_seen = float("inf")
         self._csv_started = False
+        self.episode_count = 0
         log_csv_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _init_callback(self) -> None:
-        # header
         if not self.log_csv_path.exists():
             with self.log_csv_path.open("w", newline="") as f:
                 w = csv.writer(f)
-                w.writerow(["step", "reward_mean", "success_rate", "best_score"])
+                w.writerow(["step", "episode", "reward_mean", "success_rate", "best_score"])
         self._csv_started = True
 
     def _on_step(self) -> bool:
-        # run infrequently
+        # run infrequently per eval cadence
         if self.n_calls % self.eval_every != 0:
             return True
 
-        # quick eval: mean reward over 5 episodes + success rate
+        # --- quick eval: run 5 episodes on the separate eval env ---
         ep_rewards = []
         successes = 0
         for _ in range(5):
-            obs = self.training_env.reset()
-            if isinstance(obs, tuple):
-                obs, _ = obs
+            obs, _ = self.eval_env.reset()
             done, trunc = False, False
             total_r = 0.0
+            last_info = {}
             while not (done or trunc):
                 action, _ = self.model.predict(obs, deterministic=False)
-                obs, r, done, trunc, info = self.training_env.step(action)
+                obs, r, done, trunc, info = self.eval_env.step(action)
                 total_r += float(r)
+                last_info = info
             ep_rewards.append(total_r)
-            if "final_info" in info and info["final_info"]:
-                finfo = info["final_info"]
-                if isinstance(finfo, dict):
-                    sc = finfo.get("score", {})
-                    if isinstance(sc, dict) and float(sc.get("total", 1e9)) <= 1000.0:
-                        successes += 1
+            # infer success from final info if present
+            if isinstance(last_info, dict):
+                sc = last_info.get("score", {})
+                if isinstance(sc, dict) and float(sc.get("total", 1e9)) <= 1000.0:
+                    successes += 1
 
         reward_mean = float(np.mean(ep_rewards)) if ep_rewards else 0.0
 
-        # write artifacts for each spec and checkpoint
-        worst_total = 0.0
+        # --- write artifacts for each spec and track best ---
         for spec in self.specs:
             _, best_total = evaluate_and_write(
                 model=self.model,
@@ -215,20 +236,27 @@ class EvalSaveCallback(BaseCallback):
                 horizon=self.eval_horizon,
                 library_root=self.library_root,
             )
-            worst_total = max(worst_total, best_total)
             self.best_total_seen = min(self.best_total_seen, best_total)
 
-        # save checkpoints (rolling + stepped)
+        # --- save checkpoints ---
         self.model.save(str(self.save_base))
         self.model.save(str(self.save_base.parent / f"{self.save_base.name}-step{self.num_timesteps:06d}"))
 
-        # append CSV + concise print
+        # episode counter (one per eval cycle)
+        self.episode_count += 1
+
+        # --- CSV ---
         with self.log_csv_path.open("a", newline="") as f:
             w = csv.writer(f)
-            w.writerow([self.num_timesteps, reward_mean, successes / 5.0, self.best_total_seen])
+            w.writerow([self.num_timesteps, self.episode_count, reward_mean, successes / 5.0, self.best_total_seen])
 
-        print(f"[eval] step={self.num_timesteps} reward_mean={reward_mean:.2f} "
-              f"success_rate={successes/5.0:.2f} best_score={self.best_total_seen:.2f}", flush=True)
+        # --- concise print ---
+        print(
+            f"[eval] step={self.num_timesteps} episode={self.episode_count} "
+            f"reward_mean={reward_mean:.2f} success_rate={successes/5.0:.2f} "
+            f"best_score={self.best_total_seen:.2f}",
+            flush=True,
+        )
 
         return True
 
@@ -262,7 +290,7 @@ def main():
     # specs
     specs = load_specs(args.specs)
 
-    # env
+    # env kwargs shared between train and eval
     env_kwargs = dict(
         env_id=args.env_id,
         specs=specs,
@@ -274,7 +302,11 @@ def main():
         lambda_smooth=args.lam_smooth,
         normalize_angles=args.normalize_angles,
     )
+    eval_env_kwargs = dict(env_kwargs)  # separate instance for eval
+
+    # vectorized training env with trajectory recorder
     vec_env = make_vec_env(env_kwargs, seed=args.seed, logdir=Path(args.logdir), hold=args.hold)
+
     save_base = Path(args.save)
     save_base.parent.mkdir(parents=True, exist_ok=True)
 
@@ -317,6 +349,8 @@ def main():
         log_csv_path=log_csv,
         library_root=Path(args.library_root),
         eval_every_steps=max(1, int(args.eval_interval)),
+        eval_env_kwargs=eval_env_kwargs,
+        eval_seed=args.seed + 123,
     )
 
     # train with progress bar
