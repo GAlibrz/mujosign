@@ -1,8 +1,8 @@
 # Core
 numpy
-gymnasium==0.26.2
-mujoco==3.1.2
-myosuite==2.8.4
+gymnasium
+mujoco
+myosuite
 
 # Docs / parsing / configs
 pyyaml
