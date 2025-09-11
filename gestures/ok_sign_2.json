@@ -2,45 +2,75 @@
   "gesture": "ok_sign_2",
   "joints": {
     "index_DIP_flex": {
-      "target": -90,
+      "target": 90,
       "tolerance": 10,
       "weight": 1.0
     },
     "index_MCP_flex": {
-      "target": -90,
+      "target": 90,
       "tolerance": 10,
       "weight": 1.0
     },
     "index_PIP_flex": {
-      "target": -90,
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "little_DIP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "little_MCP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "little_PIP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "middle_DIP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "middle_MCP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "middle_PIP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "ring_DIP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "ring_MCP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "ring_PIP_flex": {
+      "target": 90,
       "tolerance": 10,
       "weight": 1.0
     },
     "thumb_CMC_flex": {
-      "target": -45,
-      "tolerance": 10,
-      "weight": 1.0
-    },
-    "thumb_IP_flex": {
-      "target": -90,
+      "target": 30,
       "tolerance": 10,
       "weight": 1.0
     },
     "thumb_MCP_flex": {
-      "target": -90,
-      "tolerance": 10,
-      "weight": 1.0
-    },
-    "wrist_pitch": {
-      "target": 0,
-      "tolerance": 10,
-      "weight": 1.0
-    },
-    "wrist_yaw": {
-      "target": 0,
+      "target": 60,
       "tolerance": 10,
       "weight": 1.0
     }
   },
-  "notes": "Index and thumb form a closed ring, other fingers extended."
+  "notes": "All fingers touching, typical Italian gesture for 'delicious'."
 }

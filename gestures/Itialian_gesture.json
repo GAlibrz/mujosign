@@ -1,0 +1,56 @@
+{
+  "gesture": "ok_sign_3",
+  "joints": {
+    "index_DIP_flex": {
+      "target": 0,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "index_MCP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "index_PIP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "little_MCP_flex": {
+      "target": 0,
+      "tolerance": 10,
+      "weight": 0.5
+    },
+    "middle_MCP_flex": {
+      "target": 0,
+      "tolerance": 10,
+      "weight": 0.5
+    },
+    "ring_MCP_flex": {
+      "target": 0,
+      "tolerance": 10,
+      "weight": 0.5
+    },
+    "thumb_IP_flex": {
+      "target": 0,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "thumb_MCP_flex": {
+      "target": 90,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "wrist_pitch": {
+      "target": 0,
+      "tolerance": 10,
+      "weight": 1.0
+    },
+    "wrist_yaw": {
+      "target": 0,
+      "tolerance": 10,
+      "weight": 1.0
+    }
+  },
+  "notes": "Index and thumb form a closed ring, other fingers extended."
+}

@@ -1,0 +1,5 @@
+scripts/gesture_and_train.sh ok_sign_2 \
+  "Index and thumb form a closed ring, other three fingers extended but relaxed, neutral wrist." \
+  --total-steps 60000 --hold 10 --max-steps 16 --eval-interval 1000
+
+  
