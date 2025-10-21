@@ -30,6 +30,7 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+.DS_Store
 
 # --- Project specific ---
 # Simulation outputs and discovery dumps
