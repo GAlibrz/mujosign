@@ -50,3 +50,4 @@ configs/*.local.yaml
 
 # --- Data cache (if you add later) ---
 data/cache/**
+trace*
