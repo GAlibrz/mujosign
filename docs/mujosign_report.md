@@ -1,208 +1,124 @@
-# Mujosign: Documentation-First Project Report
+# Mujosign Project Report
 
-## 1. Problem Definition and Goals
+_Last updated: October 2025_
 
-### Motivation
-The human hand can produce a rich vocabulary of gestures. Mapping these gestures to biologically plausible muscle activations is a non-trivial problem because the musculoskeletal system is redundant, nonlinear, and constrained by anatomy.
+## 1. Problem Statement & Goals
 
-**Mujosign** is a documentation-first research project that builds an interface between gesture specifications (e.g., “V-sign”, “fist”, “thumbs up”) and the muscle activations in a physics-based simulator (**MyoSuite/MuJoCo**).
+Human hand gestures can be described declaratively (e.g., “thumbs up”, “OK sign”), but mapping those descriptions to physiologically plausible muscle activation vectors is non-trivial. Mujosign explores this bridge for Meta's MyoSuite hand models by:
 
-### Goals
-1. Provide a specification format for gestures (JSON schemas).
-2. Use optimizers and solvers to find muscle activation vectors that approximate those gestures.
-3. Store all results in a reproducible gesture library with provenance metadata.
-4. Enable rendering and replay of gestures for inspection and communication.
-5. Establish a modular pipeline that can later include RL-based solvers or neural network optimizers.
+1. Defining gestures in JSON with reproducible tolerances and weights.
+2. Searching for muscle activation vectors through deterministic optimisation and reinforcement learning.
+3. Capturing every run with rich provenance so results remain reproducible.
+4. Providing tooling to render, replay, and iterate on gestures quickly.
+5. Experimenting with language-model-assisted gesture authoring to accelerate spec creation.
 
----
-
-## 2. Repository Structure (Authoritative)
+## 2. Repository Snapshot
 
 ```
 mujosign/
 ├─ README.md
-├─ LICENSE
-├─ .gitignore
 ├─ pyproject.toml
-├─ conda-env.yml
-├─ .env.example
-│
+├─ requirements.txt
 ├─ docs/
 │  ├─ ARCHITECTURE.md
+│  ├─ RUNBOOK.md
 │  ├─ SPEC_GESTURE_JSON.md
 │  ├─ SPEC_SCORING.md
-│  ├─ RUNBOOK.md
-│  ├─ TESTING.md
-│  ├─ DATA_MODEL.md
-│  ├─ LOGGING_PROVENANCE.md
-│  ├─ CONTRIBUTING.md
-│  ├─ ROADMAP.md
-│  ├─ GLOSSARY.md
-│  └─ ADR/
-│     └─ ADR-0001-gesture-schema.md
-│
-├─ gestures/
-│  ├─ fist.json
-│  ├─ thumbs_up.json
-│  ├─ v_sign.json
-│  └─ pinch.json
-│
-├─ configs/
-│  ├─ camera.default.yaml
-│  ├─ scoring.v1.yaml
-│  ├─ solver.fastpath.yaml
-│  ├─ solver.synergy.yaml
-│  └─ batch.default.yaml
-│
-├─ scripts/
-│  ├─ run_single.py
-│  ├─ run_batch.py
-│  ├─ validate_specs.py
-│  ├─ summarize_library.py
-│  └─ render_pose.py
-│
+│  └─ mujosign_report.md  ← this file
+├─ gestures/              # JSON gesture specs (manual + LLM-generated)
+├─ library/               # Generated artefacts (runs per gesture)
+├─ scripts/               # Training, rendering, gesture generation, utilities
 ├─ src/mujosign/
-│  ├─ sim_adapter.py
-│  ├─ scoring.py
-│  ├─ specs.py
-│  ├─ solvers/
-│  │  ├─ fastpath.py
-│  │  ├─ synergy_search.py
-│  │  └─ utils.py
 │  ├─ artifacts.py
-│  ├─ rendering.py
-│  └─ utils/
-│     ├─ joint_names.py
-│     ├─ rom_tables.py
-│     └─ logging_utils.py
-│
-├─ library/
-│  └─ <gesture-name>/
-│     ├─ activation.json
-│     ├─ pose_summary.json
-│     ├─ scores.json
-│     ├─ provenance.json
-│     ├─ gesture_spec.json
-│     └─ thumb.png
-│
-├─ reports/
-│  ├─ library_summary.md
-│  └─ metrics.csv
-│
-├─ schemas/
-│  ├─ gesture_spec.schema.json
-│  └─ gesture_card.schema.json
-│
-├─ tests/
-│  ├─ test_scoring_determinism.py
-│  ├─ test_rom_guards.py
-│  ├─ test_contact_rules.py
-│  ├─ test_render_consistency.py
-│  └─ test_spec_validation.py
-│
-└─ tools/
-   ├─ precommit-config.yaml
-   └─ make_thumbnails.sh
+│  ├─ rl/pose_env.py
+│  ├─ scoring.py
+│  ├─ sim_adapter.py
+│  ├─ solvers/fastpath.py
+│  └─ utils/joint_names.py
+├─ configs/               # Example solver configs
+├─ schemas/               # gesture_spec JSON schema
+└─ runs/, reports/, trace_*  # Generated at runtime (not version-controlled)
 ```
 
-**Rules & Conventions**
-- Docs > Code: docs are authoritative.
-- Deterministic scoring.
-- ROM & tendon constraints always enforced.
-- Immutable artifacts per provenance hash.
-- Specs validated against schema.
+Notable absences compared to early design drafts:
+- No `tests/` directory yet (manual / ad-hoc validation only).
+- No CMA-ES “synergy search” solver implementation; `fastpath` is the only static optimiser.
+- No `specs.py` module; JSON is loaded ad-hoc.
 
----
+## 3. Current Workflow
 
-## 3. Workflow Overview
+1. **Author Gesture Spec**
+   - Manual edit or via `scripts/gesture_to_train.py` (LLM-assisted).
+   - Specs are stored under `gestures/`.
+2. **Inspect Environment**
+   - `scripts/inspect_names.py` dumps joints/actuators/sites so that DOF mapping and muscle order are known.
+3. **Simulation & Scoring**
+   - `EnvAdapter` wraps Gymnasium's `myoHandPoseFixed-v0`, exposing joint angles in Mujosign's naming.
+   - `scoring.py` currently computes pose error with per-joint tolerances.
+4. **Search for Activations**
+   - `scripts/run_single.py` runs coordinate descent (`fastpath`).
+   - `scripts/train_rl_sac.py` trains a SAC agent in `PoseActivationEnv`, periodically evaluating and exporting the best activation.
+   - Launcher scripts (`launch_train.sh`, `launch_train_foreground.sh`, `gesture_and_train.sh`) orchestrate environment setup and logging.
+5. **Archive Artefacts**
+   - `write_run_artifacts` saves activation vectors, scores, pose summaries, provenance (including hashes of spec and muscle order), a README card, and optional thumbnails under `library/<gesture>/runs/<hash>/`.
+   - Symlinks (`latest`, `best_total`, `best_pose`) provide quick access to key runs per gesture.
+6. **Inspect Results**
+   - `render_pose.py`, `view_run.py`, and `loop_replay.py` render or replay results.
 
-1. **Gesture spec (JSON)** → defines joint targets, tolerances, weights.
-2. **Validation** → `validate_specs.py` checks against schema.
-3. **Inspection** → `inspect_names.py` enumerates joints, muscles, sites.
-4. **Optimization** → `run_single.py` runs solver (fastpath, synergy, etc.).
-5. **Artifacts** → JSON + PNG stored in `library/gesture/runs/hash/`.
-6. **Replay/Render** → `render_pose.py` produces thumbnails; `view_run.py` interactive viewer.
+## 4. Component Notes
 
----
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Gesture schema (`schemas/gesture_spec.schema.json`) | Aspires to full feature set | Runtime currently uses only `gesture`, `joints`, `notes`. Other sections (relations, contacts, stability) are placeholders for future work. |
+| Scoring (`src/mujosign/scoring.py`) | Minimal | Computes pose error; other metrics return `0.0`. |
+| Env adapter (`src/mujosign/sim_adapter.py`) | Stable | Provides joint angles and fingertip positions; ready for relation/orientation scoring once implemented. |
+| Static solver (`src/mujosign/solvers/fastpath.py`) | Stable | Deterministic coordinate descent with configurable step schedule. |
+| RL env (`src/mujosign/rl/pose_env.py`) | Stable | Observations = spec features + current angles. Reward = negative total score minus optional effort/smoothness penalties. |
+| SAC training (`scripts/train_rl_sac.py`) | Active | Supports resume, periodic evaluation, CSV logging, and artefact export. |
+| LLM tooling (`scripts/gesture_to_train.py`, `scripts/gesture_and_train.sh`) | Experimental | Requires `openai` + `python-dotenv`. Relies on `OPENAI_API_KEY`. Generates spec JSON in repo before launching training. |
+| Artefact writer (`src/mujosign/artifacts.py`) | Stable | Writes immutable run folders, updates `index.json`, and manages symlinks. |
 
-## 4. Component Documentation
+## 5. Execution Cheatsheet
 
-### `inspect_names.py`
-Extracts joint, actuator, and site names from a MyoSuite env and writes them to CSV/JSON for reference.
-
-### `joint_names.py`
-Defines `DOF_MAP`, `TIP_SITES`, and stable muscle order, used by adapters and solvers.
-
-### `run_single.py`
-Main runner: takes `--spec` gesture JSON, applies solver, scores pose, writes artifacts.
-
-### `fastpath.py`
-Implements coordinate descent optimization to minimize pose error.
-
-### `artifacts.py`
-Writes activation.json, pose_summary.json, provenance.json, thumb.png for reproducibility.
-
-### `render_pose.py`
-Replays a saved run and re-renders an image of the gesture.
-
-### `view_run.py`
-Interactive GUI viewer (dm_control.viewer) to see gestures in 3D.
-
-### `validate_specs.py`
-Validates all gestures against `schemas/gesture_spec.schema.json`.
-
-... (and so on, with explanations for configs, schemas, tests)
-
----
-
-## 5. Execution Instructions
-
-### Setup
 ```bash
-conda create -n myosuite python=3.8
-conda activate myosuite
-pip install -e .
-export MUJOCO_GL=glfw
+# Generate spec via LLM + run short SAC training
+scripts/gesture_and_train.sh ok_sign_2 \
+  "Index and thumb form a ring; other fingers relaxed; neutral wrist." \
+  --total-steps 60000 --hold 10 --max-steps 16
+
+# Static solver for an existing spec
+python scripts/run_single.py --spec gestures/thumbs_up.json
+
+# Long SAC run (nohup)
+scripts/launch_train.sh v_sign --total-steps 1500000
+
+# Render latest run thumbnail
+python scripts/render_pose.py --run-dir library/v_sign/latest --out reports/v_sign.png
 ```
 
-### Validate specs
-```bash
-python scripts/validate_specs.py gestures/
-```
+## 6. Status & Gaps
 
-### Run optimization
-```bash
-python scripts/run_single.py --spec gestures/v_sign.json --opt fastpath --opt-config configs/solver.fastpath.yaml
-```
-
-### Re-render run
-```bash
-python scripts/render_pose.py --env-id myoHandPoseFixed-v0 --run-dir library/v_sign/runs/<hash> --out reports/replay.png
-```
-
-### Interactive view
-```bash
-python scripts/view_run.py --env-id myoHandPoseFixed-v0 --run-dir library/v_sign/runs/<hash>
-```
-
----
-
-## 6. Evolution Path
-
-- Started with documentation-first repo skeleton.
-- Added gesture JSON specs + schema validation.
-- Inspected sim (joints, actuators, sites).
-- Defined DOF maps and stable muscle order.
-- Implemented runner (`run_single.py`) with fastpath solver.
-- Built artifacts writer with provenance metadata.
-- Added re-render (`render_pose.py`) and interactive viewer (`view_run.py`).
-- Next steps: improve scoring, add RL-based solvers, extend relation encoding.
-
----
+- ✅ **Gesture library** – multiple gestures (fist, thumbs up, v sign, OK variants, LLM-generated Italian gesture) available.
+- ✅ **Artefact pipeline** – runs are archived with provenance + thumbnails (when render succeeds).
+- ✅ **RL training** – SAC pipeline produces activations and integrates with artefact writer.
+- ✅ **LLM integration** – one-shot script generates specs from natural language prompts.
+- ⚠️ **Schema adherence** – existing gesture JSON files do not satisfy the full schema; validation is optional/informational.
+- ⚠️ **Scoring depth** – relation/contact/orientation/effort terms are unimplemented.
+- ⚠️ **Testing & CI** – no automated tests; manual inspection only.
+- ⚠️ **Documentation debt** – schema field coverage, scoring roadmap, and RL tuning guidelines should be expanded further.
 
 ## 7. Next Steps
 
-- Implement RL agent to optimize activations across episodes.
-- Integrate relation-based scoring.
-- Improve rendering quality and camera control.
-- Add batch runner + metrics dashboards.
+1. Implement additional scoring terms (relations, orientation, effort) and update specs/weights accordingly.
+2. Align gesture JSON files with the full schema or relax the schema to match current usage.
+3. Add automated tests (deterministic scoring, artefact writer invariants, env adapter integration).
+4. Capture RL training heuristics (reward curves, hyperparameter sweeps) in a dedicated doc.
+5. Explore alternative optimisers (CMA-ES or gradient-based) once scoring covers more terms.
+
+## 8. References
+
+- `docs/ARCHITECTURE.md` – component-level overview.
+- `docs/RUNBOOK.md` – day-to-day operations guide.
+- `docs/SPEC_GESTURE_JSON.md` – contract for gesture JSON.
+- `docs/SPEC_SCORING.md` – scoring logic and roadmap.
+- `README.md` – quickstart and repo map for newcomers.
